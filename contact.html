@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact us — The Wellness Edit</title>
+  <meta name="description" content="Contact The Wellness Edit customer service, partnerships and webmaster.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="contact">
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap">
+        <p class="breadcrumb"><a href="index.html">Home</a> / Contact us</p>
+        <span class="eyebrow">Here to help</span>
+        <h1>We're here to help.</h1>
+        <p class="lead">Questions about a formula, an order or a partnership? Send us a note. We reply within one business day, in English, Spanish or French.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0">
+      <div class="wrap contact-grid">
+        <div>
+          <div class="contact-block">
+            <h3>Customer service</h3>
+            <p>Lyndsay Sanchez, VP of Customer Service &amp; Outreach</p>
+            <p><a class="text-link" href="mailto:hello@thewellnessedit.com">hello@thewellnessedit.com</a></p>
+            <p><a class="text-link" href="tel:+18005550199">1 (800) 555-0199</a></p>
+          </div>
+          <div class="contact-block">
+            <h3>Hours</h3>
+            <p>Monday – Friday, 9am – 5pm CT</p>
+            <p>Saturday, 10am – 2pm CT</p>
+          </div>
+          <div class="contact-block">
+            <h3>Mailing address</h3>
+            <p>The Wellness Edit<br>100 Main Street, Suite 200<br>Austin, TX 78701, USA</p>
+          </div>
+          <div class="contact-block">
+            <h3>Advertising &amp; partnerships</h3>
+            <p>Liam McCawley, VP of Marketing</p>
+            <p><a class="text-link" href="mailto:partners@thewellnessedit.com">partners@thewellnessedit.com</a></p>
+          </div>
+          <div class="contact-block">
+            <h3>Webmaster</h3>
+            <p>Diwash Adhikari, VP of Technology</p>
+            <p><a class="text-link" href="mailto:webmaster@thewellnessedit.com">webmaster@thewellnessedit.com</a></p>
+          </div>
+        </div>
+
+        <form class="form js-contact" novalidate>
+          <div class="form-row">
+            <div class="field"><label for="c-name">Full name</label><input id="c-name" name="name" required autocomplete="name"></div>
+            <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" required autocomplete="email"></div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="c-topic">Topic</label>
+              <select id="c-topic" name="topic">
+                <option value="order">An order</option>
+                <option value="product">A product question</option>
+                <option value="returns">Returns</option>
+                <option value="advertising">Advertising &amp; partnerships</option>
+                <option value="website">Website / webmaster</option>
+                <option value="other">Something else</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-lang">Preferred language</label>
+              <select id="c-lang" name="lang"><option>English</option><option>Español</option><option>Français</option></select>
+            </div>
+          </div>
+          <div class="field"><label for="c-order">Order number (optional)</label><input id="c-order" name="order" placeholder="WE-123456"></div>
+          <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
+          <p class="form-note">We'll only use your details to reply. See our <a class="text-link" href="privacy.html">privacy policy</a>.</p>
+          <div><button class="btn" type="submit"><span>Send message</span> <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="form-success" role="status"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="js/main.js"></script>
+  <script>
+    // Pre-select a topic from the URL, e.g. contact.html?topic=advertising
+    (function () {
+      var t = new URLSearchParams(location.search).get("topic");
+      var sel = document.getElementById("c-topic");
+      if (t && sel.querySelector('option[value="' + t + '"]')) sel.value = t;
+    })();
+  </script>
+</body>
+</html>
