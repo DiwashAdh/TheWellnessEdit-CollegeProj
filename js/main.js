@@ -1,5 +1,5 @@
 /* =========================================================
-   The Wellness Edit — front-end only (no database, no server)
+   The Wellness Edit: front-end only (no database, no server)
    Cart, currency and language are kept in the browser.
    ========================================================= */
 
@@ -31,7 +31,7 @@ const PRODUCTS = {
     gallery: ["assets/img/daily-green.jpg", "assets/img/everyday-pair.jpg", "assets/img/bowl.jpg"],
     tags: ["Energy", "Immunity", "Nourish"],
     short: "A simple moringa formula for an easy daily habit. Green, uncomplicated and made to fit into your day.",
-    long: "Daily Green brings moringa — a leafy green botanical — into a simple daily capsule. With 180 supplements per container, it is made to become part of your morning without a second thought.",
+    long: "Daily Green brings moringa, a leafy green botanical, into a simple daily capsule. With 180 supplements per container, it is made to become part of your morning without a second thought.",
     how: "Take as directed on the label, ideally with breakfast so a familiar daily moment becomes your reminder.",
     facts: [["Serving size", "3 capsules"], ["Servings per container", "60"], ["Moringa leaf powder", "See label"], ["Capsule", "Plant-based (HPMC)"]]
   },
@@ -224,7 +224,7 @@ function renderHeader() {
   <div class="announce">A little care, delivered. Free US shipping over $60.</div>
   <header class="site-header" id="header">
     <div class="wrap header-inner">
-      <a class="logo" href="index.html" aria-label="The Wellness Edit — home">${logoHTML()}</a>
+      <a class="logo" href="index.html" aria-label="The Wellness Edit home">${logoHTML()}</a>
       <nav class="main-nav" id="main-nav" aria-label="Main">
         <button class="nav-close" id="nav-close" aria-label="Close menu">&times;</button>
         <ul>
@@ -279,7 +279,7 @@ function renderFooter() {
 
       <div class="footer-grid">
         <div class="footer-brand">
-          <a class="logo" href="index.html" aria-label="The Wellness Edit — home">${logoHTML()}</a>
+          <a class="logo" href="index.html" aria-label="The Wellness Edit home">${logoHTML()}</a>
           <p class="tagline">Care, in your own rhythm.</p>
           <div class="socials" aria-label="Social media">
             <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">${ICON.instagram}</a>
@@ -475,13 +475,13 @@ function renderProductPage() {
   const id = document.body.dataset.product;
   const p = PRODUCTS[id] && id !== "pair" ? PRODUCTS[id] : PRODUCTS.chill;
   const other = p.id === "chill" ? PRODUCTS.green : PRODUCTS.chill;
-  document.title = `${p.name} (${p.ingredient}) — The Wellness Edit`;
+  document.title = `${p.name} (${p.ingredient}) | The Wellness Edit`;
   const crumb = document.getElementById("crumb-name");
   if (crumb) crumb.textContent = p.name;
 
   root.innerHTML = `
   <div class="pdp-gallery">
-    <img id="pdp-main" src="${p.gallery[0]}" alt="${p.name} — ${p.ingredient} supplement bottle">
+    <img id="pdp-main" src="${p.gallery[0]}" alt="${p.name}, ${p.ingredient} supplement bottle">
     <div class="pdp-thumbs">
       ${p.gallery.map((src, i) => `<button type="button" data-src="${src}" aria-pressed="${i === 0}" aria-label="Show image ${i + 1}"><img src="${src}" alt=""></button>`).join("")}
     </div>
@@ -529,7 +529,7 @@ function renderProductPage() {
 
 function productCardHTML(p) {
   return `<article class="product-card">
-    <a class="media" href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html"><img src="${p.img}" alt="${p.name} — ${p.ingredient}" loading="lazy"></a>
+    <a class="media" href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html"><img src="${p.img}" alt="${p.name}, ${p.ingredient}" loading="lazy"></a>
     <span class="eyebrow">${p.number}</span>
     <div class="product-title-row"><h3><a href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html">${p.name}</a></h3><span class="price" data-usd="${p.price}">${formatMoney(p.price)}</span></div>
     <p class="ingredient">${p.ingredient}</p>
@@ -553,7 +553,7 @@ function bindForms() {
         msg.textContent = "Please enter a valid email address.";
         return;
       }
-      msg.textContent = "Thank you — you're on the list. (Demo only: no email is stored.)";
+      msg.textContent = "Thank you, you're on the list. (Demo only: no email is stored.)";
       form.reset();
     });
   });
