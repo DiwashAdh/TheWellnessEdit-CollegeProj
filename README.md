@@ -19,3 +19,4 @@ Home · Shop · Product details · About & Team · Ingredients · Journal · FAQ
 
 No plug-ins are used: multi-currency prices and Spanish/French text are plain text. The optional demo cart is saved in localStorage.
 # TheWellnessEdit-CollegeProj
+# TheWellnessEdit-CollegeProj
