@@ -68,27 +68,136 @@ const store = {
   }
 };
 
-const state = { cart: store.get("twe_cart", {}) };
+const state = {
+  cart: store.get("twe_cart", {}),
+  currency: store.get("twe_currency", "USD"),
+  lang: store.get("twe_lang", "en")
+};
+if (!CURRENCIES[state.currency]) state.currency = "USD";
 
-function money(amount, code) {
-  const c = CURRENCIES[code];
-  const digits = code === "JPY" || amount * c.rate >= 100 ? 0 : 2;
-  return new Intl.NumberFormat(c.locale, {
-    style: "currency", currency: code,
-    minimumFractionDigits: (amount * c.rate) % 1 === 0 ? 0 : digits,
-    maximumFractionDigits: digits
-  }).format(amount * c.rate);
+function formatMoney(usd) {
+  const code = state.currency;
+  const v = usd * CURRENCIES[code].rate;
+  const digits = code === "JPY" || v >= 100 || v % 1 === 0 ? 0 : 2;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency", currency: code, minimumFractionDigits: digits, maximumFractionDigits: digits
+  }).format(digits ? v : Math.round(v));
 }
-function formatMoney(usd) { return money(usd, "USD"); }
 
-/* Approximate international prices, shown as plain text (no conversion tool). */
-function altPrices(usd) {
-  return "Approx. " + ["CAD", "MXN", "EUR", "GBP", "INR", "NPR"].map(c => money(usd, c)).join(" · ");
+/* ---------- Language ----------
+   Keyed by the English text on the page; ES / FR replace it in place. */
+const LANGS = { en: "English", es: "Español", fr: "Français" };
+const I18N = {
+  "A little care, delivered. Free US shipping over $60.": ["Un poco de cuidado, a domicilio. Envío gratis en EE. UU. desde $60.", "Un peu de soin, livré chez vous. Livraison offerte aux États-Unis dès 60 $."],
+  "Shop the collection": ["Ver la colección", "La collection"],
+  "Our approach": ["Nuestro enfoque", "Notre approche"],
+  "The journal": ["El diario", "Le journal"],
+  "FAQ": ["Preguntas", "FAQ"],
+  "Contact": ["Contacto", "Contact"],
+  "Bag": ["Bolsa", "Panier"],
+  "Rooted in nature. Guided by science.": ["Arraigado en la naturaleza. Guiado por la ciencia.", "Ancré dans la nature. Guidé par la science."],
+  "A little ritual.<br>A fuller life.": ["Un pequeño ritual.<br>Una vida más plena.", "Un petit rituel.<br>Une vie plus pleine."],
+  "Thoughtful supplements for the everyday. Two simple formulas. One gentler way to care for yourself.": ["Suplementos pensados para el día a día. Dos fórmulas simples. Una forma más amable de cuidarte.", "Des compléments pensés pour le quotidien. Deux formules simples. Une façon plus douce de prendre soin de soi."],
+  "Find your daily ritual": ["Encuentra tu ritual diario", "Trouvez votre rituel"],
+  "Ashwagandha to unwind. Moringa for every day.": ["Ashwagandha para relajarte. Moringa para cada día.", "L'ashwagandha pour se détendre. Le moringa pour chaque jour."],
+  "The everyday collection": ["La colección diaria", "La collection du quotidien"],
+  "From first light to slow evenings.": ["Del amanecer a las tardes tranquilas.", "Du premier rayon aux soirées paisibles."],
+  "Wellness, without the noise": ["Bienestar, sin ruido", "Le bien-être, sans le bruit"],
+  "Not more things to take. Just a few good things to come back to, every day.": ["No más cosas que tomar. Solo unas pocas cosas buenas a las que volver, cada día.", "Pas plus de choses à prendre. Juste quelques bonnes choses auxquelles revenir, chaque jour."],
+  "A small, intentional collection": ["Una colección pequeña e intencional", "Une petite collection réfléchie"],
+  "Two essentials. Yours, daily.": ["Dos esenciales. Tuyos, cada día.", "Deux essentiels. Les vôtres, chaque jour."],
+  "A place to begin, not a shelf to fill. Discover the formula that fits your rhythm.": ["Un lugar para empezar, no un estante que llenar. Descubre la fórmula que va con tu ritmo.", "Un point de départ, pas une étagère à remplir. Découvrez la formule qui suit votre rythme."],
+  "View details": ["Ver detalles", "Voir les détails"],
+  "Add The Chill Pill to bag": ["Añadir The Chill Pill", "Ajouter The Chill Pill"],
+  "Add Daily Green to bag": ["Añadir Daily Green", "Ajouter Daily Green"],
+  "Add to bag": ["Añadir a la bolsa", "Ajouter au panier"],
+  "The ingredient edit": ["Los ingredientes", "Les ingrédients"],
+  "Know what goes in.": ["Conoce lo que contiene.", "Sachez ce qu'il contient."],
+  "Make room for yourself": ["Haz espacio para ti", "Faites-vous de la place"],
+  "Small rituals. Real life.": ["Pequeños rituales. Vida real.", "Petits rituels. Vraie vie."],
+  "Begin with Daily Green.": ["Empieza con Daily Green.", "Commencez avec Daily Green."],
+  "Slow down with The Chill Pill.": ["Desacelera con The Chill Pill.", "Ralentissez avec The Chill Pill."],
+  "Keep it your kind of simple.": ["Mantenlo simple, a tu manera.", "Restez simple, à votre façon."],
+  "A more considered kind of care": ["Un cuidado más consciente", "Un soin plus réfléchi"],
+  "Nature sets the pace.<br>Clarity leads the way.": ["La naturaleza marca el ritmo.<br>La claridad guía el camino.", "La nature donne le rythme.<br>La clarté montre la voie."],
+  "Meet The Wellness Edit →": ["Conoce The Wellness Edit →", "Découvrir The Wellness Edit →"],
+  "Better in rhythm": ["Mejor en ritmo", "Mieux en rythme"],
+  "Your day, thoughtfully paired.": ["Tu día, bien acompañado.", "Votre journée, joliment accompagnée."],
+  "Shop the everyday pair": ["Compra el dúo diario", "Acheter le duo"],
+  "Kind words": ["Palabras amables", "Mots doux"],
+  "Words from our community.": ["Palabras de nuestra comunidad.", "Les mots de notre communauté."],
+  "One table, many traditions": ["Una mesa, muchas tradiciones", "Une table, mille traditions"],
+  "Wellness for every culture and every table.": ["Bienestar para cada cultura y cada mesa.", "Le bien-être pour chaque culture et chaque table."],
+  "Five minutes, just for you.": ["Cinco minutos, solo para ti.", "Cinq minutes, rien que pour vous."],
+  "Notes on living well": ["Notas para vivir bien", "Notes pour bien vivre"],
+  "A little food for thought.": ["Algo en qué pensar.", "Matière à réflexion."],
+  "Explore the journal →": ["Explora el diario →", "Explorer le journal →"],
+  "Read the story ↗": ["Leer la historia ↗", "Lire l'article ↗"],
+  "Good questions": ["Buenas preguntas", "Bonnes questions"],
+  "A little more clarity.": ["Un poco más de claridad.", "Un peu plus de clarté."],
+  "Ask us a question →": ["Haznos una pregunta →", "Posez-nous une question →"],
+  "Advertise with us": ["Anúnciate con nosotros", "Annoncez chez nous"],
+  "A note, now and then": ["Una nota, de vez en cuando", "Un mot, de temps en temps"],
+  "A calmer kind of inbox.": ["Una bandeja de entrada más tranquila.", "Une boîte de réception plus sereine."],
+  "Thoughtful reads, everyday rituals and news from The Wellness Edit. Just the good things.": ["Lecturas, rituales y novedades de The Wellness Edit. Solo lo bueno.", "Lectures, rituels et nouvelles de The Wellness Edit. Seulement le meilleur."],
+  "Care, in your own rhythm.": ["Cuidado, a tu propio ritmo.", "Prendre soin, à votre rythme."],
+  "Discover": ["Descubrir", "Découvrir"],
+  "About The Wellness Edit": ["Sobre The Wellness Edit", "À propos"],
+  "Here to help": ["Para ayudarte", "À votre écoute"],
+  "The team": ["El equipo", "L'équipe"],
+  "Ingredient notes": ["Ingredientes", "Ingrédients"],
+  "Contact us": ["Contáctanos", "Nous contacter"],
+  "Shipping &amp; returns": ["Envíos y devoluciones", "Livraison et retours"],
+  "Frequently asked questions": ["Preguntas frecuentes", "Questions fréquentes"],
+  "Security": ["Seguridad", "Sécurité"],
+  "Privacy": ["Privacidad", "Confidentialité"],
+  "Terms": ["Términos", "Conditions"],
+  "Policies": ["Políticas", "Politiques"],
+  "About us": ["Sobre nosotros", "À propos"],
+  "The people behind The Wellness Edit.": ["Las personas detrás de The Wellness Edit.", "Les personnes derrière The Wellness Edit."],
+  "We're here to help.": ["Estamos aquí para ayudarte.", "Nous sommes là pour vous."],
+  "Send message": ["Enviar mensaje", "Envoyer"],
+  "Your bag.": ["Tu bolsa.", "Votre panier."],
+  "Summary": ["Resumen", "Récapitulatif"],
+  "Subtotal": ["Subtotal", "Sous-total"],
+  "Shipping": ["Envío", "Livraison"],
+  "Total": ["Total", "Total"],
+  "Checkout": ["Finalizar compra", "Commander"],
+  "You may also like.": ["También te puede gustar.", "Vous aimerez aussi."],
+  "What customers say.": ["Lo que dicen los clientes.", "Ce que disent nos clients."]
+};
+
+const TEXT_SELECTOR = ".announce,h1,h2,h3,h4,p,a,span,li,summary,button,label,th,td";
+function applyLanguage() {
+  const idx = state.lang === "es" ? 0 : state.lang === "fr" ? 1 : -1;
+  document.documentElement.lang = state.lang;
+  document.querySelectorAll(TEXT_SELECTOR).forEach(el => {
+    if (el.dataset.en === undefined) {
+      // Only leaf-ish elements: plain text, optionally with <br>
+      if (el.querySelector(":not(br)")) return;
+      const key = el.innerHTML.trim();
+      if (!I18N[key]) return;
+      el.dataset.en = key;
+    }
+    el.innerHTML = idx < 0 ? el.dataset.en : I18N[el.dataset.en][idx];
+  });
+  const ph = document.getElementById("news-email");
+  if (ph) ph.placeholder = ["Tu correo electrónico", "Votre adresse e-mail"][idx] || "Your email address";
+  updateLocaleButton();
+}
+
+function updateLocaleButton() {
+  const b = document.querySelector(".locale-btn .locale-label");
+  if (b) b.textContent = `${state.lang.toUpperCase()} · ${state.currency}`;
+  document.querySelectorAll("[data-set-lang]").forEach(x => x.setAttribute("aria-pressed", x.dataset.setLang === state.lang));
+  document.querySelectorAll("[data-set-cur]").forEach(x => x.setAttribute("aria-pressed", x.dataset.setCur === state.currency));
+  document.querySelectorAll(".js-region").forEach(x => { x.textContent = `${LANGS[state.lang]} · ${CURRENCIES[state.currency].label}`; });
 }
 
 /* ---------- Icons ---------- */
 const ICON = {
   arrow: '<svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>',
   bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
   menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg>',
   instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4ZM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM12 3.8c2.7 0 3 0 4 .1 2.7.1 4 1.4 4.1 4.1.1 1 .1 1.4.1 4s0 3-.1 4c-.1 2.7-1.4 4-4.1 4.1-1 .1-1.4.1-4 .1s-3 0-4-.1c-2.7-.1-4-1.4-4.1-4.1-.1-1-.1-1.4-.1-4s0-3 .1-4C4 5.3 5.3 4 8 3.9c1-.1 1.3-.1 4-.1ZM12 2c-2.7 0-3.1 0-4.1.1C4.2 2.3 2.3 4.2 2.1 7.9 2 8.9 2 9.3 2 12s0 3.1.1 4.1c.2 3.7 2.1 5.6 5.8 5.8 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c3.7-.2 5.6-2.1 5.8-5.8.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c-.2-3.7-2.1-5.6-5.8-5.8C15.1 2 14.7 2 12 2Z"/></svg>',
@@ -127,6 +236,16 @@ function renderHeader() {
         </ul>
       </nav>
       <div class="header-tools">
+        <div class="locale">
+          <button class="locale-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="locale-panel">${ICON.globe}<span class="locale-label">EN · USD</span></button>
+          <div class="locale-panel" id="locale-panel" role="dialog" aria-label="Language and currency">
+            <p class="locale-title">Language</p>
+            <div class="locale-langs">${Object.entries(LANGS).map(([k, v]) => `<button type="button" data-set-lang="${k}">${v}</button>`).join("")}</div>
+            <p class="locale-title">Currency</p>
+            <div class="locale-curs">${Object.entries(CURRENCIES).map(([k, c]) => `<button type="button" data-set-cur="${k}"><strong>${k}</strong><span>${c.label.split(" ")[1]}</span></button>`).join("")}</div>
+            <p class="locale-note">Prices are converted at approximate rates. Orders are charged in USD.</p>
+          </div>
+        </div>
         <a class="bag-link" href="cart.html" aria-label="Shopping bag">${ICON.bag}<span class="bag-text"><span>Bag</span> (<span class="bag-count">0</span>)</span></a>
         <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">${ICON.menu}</button>
       </div>
@@ -173,8 +292,8 @@ function renderFooter() {
         <div class="footer-col">
           <h4>Discover</h4>
           <ul>
-            <li><a href="product.html?id=chill">The Chill Pill</a></li>
-            <li><a href="product.html?id=green">Daily Green</a></li>
+            <li><a href="chill-pill.html">The Chill Pill</a></li>
+            <li><a href="daily-green.html">Daily Green</a></li>
             <li><a href="shop.html#pair">The everyday pair</a></li>
             <li><a href="shop.html">Shop the collection</a></li>
           </ul>
@@ -207,10 +326,9 @@ function renderFooter() {
           <a href="policies.html#terms">Terms</a>
           <a href="policies.html">Policies</a>
           <a href="security.html">Security</a>
-          <span>United States · USD $</span>
+          <span class="js-region">English · USD $</span>
         </nav>
       </div>
-      <p class="webmaster">Bienvenidos · Bienvenue · स्वागत छ · ようこそ — Customer service in English, Español and Français. Prices are charged in USD; approximate international prices are listed with each product.</p>
       <p class="webmaster">Webmaster: Diwash Adhikari, VP of Technology · <a href="mailto:webmaster@thewellnessedit.com">webmaster@thewellnessedit.com</a> · Last updated November 2026</p>
       <p class="webmaster">The Wellness Edit is a conceptual brand created for a school e-business project. Product details and prices are illustrative.</p>
     </div>
@@ -221,7 +339,8 @@ function renderFooter() {
 /* ---------- Price text ---------- */
 function applyPrices() {
   document.querySelectorAll("[data-usd]").forEach(el => { el.textContent = formatMoney(parseFloat(el.dataset.usd)); });
-  document.querySelectorAll("[data-alt]").forEach(el => { el.textContent = altPrices(parseFloat(el.dataset.alt)); });
+  updateLocaleButton();
+  renderCart();
 }
 
 /* ---------- Cart ---------- */
@@ -353,7 +472,7 @@ function bindCart() {
 function renderProductPage() {
   const root = document.getElementById("pdp-root");
   if (!root) return;
-  const id = new URLSearchParams(location.search).get("id");
+  const id = document.body.dataset.product;
   const p = PRODUCTS[id] && id !== "pair" ? PRODUCTS[id] : PRODUCTS.chill;
   const other = p.id === "chill" ? PRODUCTS.green : PRODUCTS.chill;
   document.title = `${p.name} (${p.ingredient}) — The Wellness Edit`;
@@ -372,8 +491,7 @@ function renderProductPage() {
     <h1>${p.name}</h1>
     <p class="ingredient" style="font-weight:500;margin:0 0 4px">${p.ingredient}</p>
     <p class="tiny">${p.count}</p>
-    <p class="pdp-price" data-usd="${p.price}" style="margin-bottom:4px">${formatMoney(p.price)}</p>
-    <p class="tiny" style="margin-bottom:20px">${altPrices(p.price)} · Charged in USD</p>
+    <p class="pdp-price" data-usd="${p.price}">${formatMoney(p.price)}</p>
     <ul class="tags">${p.tags.map(t => `<li>${t}</li>`).join("")}</ul>
     <p class="muted">${p.long}</p>
     <div class="buy-row">
@@ -411,16 +529,15 @@ function renderProductPage() {
 
 function productCardHTML(p) {
   return `<article class="product-card">
-    <a class="media" href="product.html?id=${p.id}"><img src="${p.img}" alt="${p.name} — ${p.ingredient}" loading="lazy"></a>
+    <a class="media" href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html"><img src="${p.img}" alt="${p.name} — ${p.ingredient}" loading="lazy"></a>
     <span class="eyebrow">${p.number}</span>
-    <div class="product-title-row"><h3><a href="product.html?id=${p.id}">${p.name}</a></h3><span class="price" data-usd="${p.price}">${formatMoney(p.price)}</span></div>
-    <p class="tiny" style="margin:6px 0 0">${altPrices(p.price)}</p>
+    <div class="product-title-row"><h3><a href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html">${p.name}</a></h3><span class="price" data-usd="${p.price}">${formatMoney(p.price)}</span></div>
     <p class="ingredient">${p.ingredient}</p>
     <p class="count">${p.count}</p>
     <p class="desc">${p.short}</p>
     <div class="card-actions">
       <button class="btn" type="button" data-add="${p.id}"><span>Add ${p.name} to bag</span> ${ICON.arrow}</button>
-      <a class="text-link" href="product.html?id=${p.id}">View details</a>
+      <a class="text-link" href="${p.id === "chill" ? "chill-pill" : "daily-green"}.html">View details</a>
     </div>
   </article>`;
 }
@@ -471,6 +588,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (b) addToCart(b.dataset.add);
   });
 
+  // Language + currency menu
+  const loc = document.querySelector(".locale");
+  if (loc) {
+    const btn = loc.querySelector(".locale-btn");
+    const setOpen = open => { loc.classList.toggle("open", open); btn.setAttribute("aria-expanded", open); };
+    btn.addEventListener("click", e => { e.stopPropagation(); setOpen(!loc.classList.contains("open")); });
+    document.addEventListener("click", e => { if (!loc.contains(e.target)) setOpen(false); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") setOpen(false); });
+    loc.addEventListener("click", e => {
+      const l = e.target.closest("[data-set-lang]"), c = e.target.closest("[data-set-cur]");
+      if (l) { state.lang = l.dataset.setLang; store.set("twe_lang", state.lang); applyLanguage(); }
+      if (c) { state.currency = c.dataset.setCur; store.set("twe_currency", state.currency); applyPrices(); }
+    });
+  }
+
   // Mobile nav
   const nav = document.getElementById("main-nav");
   const toggle = document.getElementById("menu-toggle");
@@ -502,5 +634,6 @@ document.addEventListener("DOMContentLoaded", () => {
   bindCart();
   bindForms();
   saveCart();
+  applyLanguage();
   applyPrices();
 });
