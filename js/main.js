@@ -333,7 +333,11 @@ function renderFooter() {
       <p class="webmaster">The Wellness Edit is a conceptual brand created for a school e-business project. Product details and prices are illustrative.</p>
     </div>
   </footer>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>`;
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="terms-pop" id="terms-pop" role="dialog" aria-label="Terms and conditions">
+    <p>By using this site you agree to our <a href="policies.html#terms">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+    <button type="button" id="terms-accept">Accept</button>
+  </div>`;
 }
 
 /* ---------- Price text ---------- */
@@ -587,6 +591,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const b = e.target.closest("[data-add]");
     if (b) addToCart(b.dataset.add);
   });
+
+  // Terms and conditions notice (shown until accepted)
+  const terms = document.getElementById("terms-pop");
+  if (terms && !store.get("twe_terms", false)) {
+    setTimeout(() => terms.classList.add("show"), 800);
+    document.getElementById("terms-accept").addEventListener("click", () => {
+      store.set("twe_terms", true);
+      terms.classList.remove("show");
+    });
+  }
 
   // Language + currency menu
   const loc = document.querySelector(".locale");
